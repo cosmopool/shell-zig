@@ -18,4 +18,6 @@ pub fn main() !void {
             try stderr.print("{s}: command not found\n", .{user_input});
         }
     }
+
+    std.process.exit(0);
 }
