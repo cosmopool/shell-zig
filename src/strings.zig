@@ -10,7 +10,7 @@ pub fn hasOnlySpaces(input: []const u8) bool {
     return true;
 }
 
-pub fn split(allocator: Allocator, input: []const u8) Allocator.Error![][]const u8 {
+pub fn split(allocator: Allocator, input: []const u8, separator: u8) Allocator.Error![][]const u8 {
     if (input.len == 0) return try allocator.alloc([]const u8, 0);
     if (hasOnlySpaces(input)) return try allocator.alloc([]const u8, 0);
     if (input.len == 1) {
@@ -24,8 +24,8 @@ pub fn split(allocator: Allocator, input: []const u8) Allocator.Error![][]const 
 
     var startIndex: usize = 0;
     for (input, 0..) |char, i| {
-        if (char != ' ') continue;
-        if (i == 0 or input[i - 1] == ' ') {
+        if (char != separator) continue;
+        if (i == 0 or input[i - 1] == separator) {
             startIndex = i + 1;
             continue;
         }
@@ -77,7 +77,7 @@ test "join input string" {
 
 test "split input string on spaces" {
     {
-        const it = try split(testing.allocator, "exit 0");
+        const it = try split(testing.allocator, "exit 0", ' ');
         defer testing.allocator.free(it);
 
         const expect = [_][]const u8{ "exit", "0" };
@@ -87,7 +87,7 @@ test "split input string on spaces" {
     }
 
     {
-        const it = try split(testing.allocator, "exit    ");
+        const it = try split(testing.allocator, "exit    ", ' ');
         defer testing.allocator.free(it);
 
         const expect = [_][]const u8{ "exit", "0" };
@@ -96,7 +96,7 @@ test "split input string on spaces" {
     }
 
     {
-        const it = try split(testing.allocator, "abc def ghi");
+        const it = try split(testing.allocator, "abc def ghi", ' ');
         defer testing.allocator.free(it);
 
         const expect = [_][]const u8{ "abc", "def", "ghi" };
@@ -107,7 +107,7 @@ test "split input string on spaces" {
     }
 
     {
-        const it = try split(testing.allocator, "abc  def ghi");
+        const it = try split(testing.allocator, "abc  def ghi", ' ');
         defer testing.allocator.free(it);
 
         const expect = [_][]const u8{ "abc", "def", "ghi" };
@@ -118,7 +118,7 @@ test "split input string on spaces" {
     }
 
     {
-        const it = try split(testing.allocator, "    abc def ghi");
+        const it = try split(testing.allocator, "    abc def ghi", ' ');
         defer testing.allocator.free(it);
 
         const expect = [_][]const u8{ "abc", "def", "ghi" };
@@ -129,7 +129,7 @@ test "split input string on spaces" {
     }
 
     {
-        const it = try split(testing.allocator, "abc          def     ghi");
+        const it = try split(testing.allocator, "abc          def     ghi", ' ');
         defer testing.allocator.free(it);
 
         const expect = [_][]const u8{ "abc", "def", "ghi" };
@@ -140,7 +140,7 @@ test "split input string on spaces" {
     }
 
     {
-        const it = try split(testing.allocator, "");
+        const it = try split(testing.allocator, "", ' ');
         defer testing.allocator.free(it);
 
         var expect = [_][]const u8{};
@@ -149,7 +149,7 @@ test "split input string on spaces" {
     }
 
     {
-        const it = try split(testing.allocator, " ");
+        const it = try split(testing.allocator, " ", ' ');
         defer testing.allocator.free(it);
 
         var expect = [_][]const u8{};
@@ -158,7 +158,7 @@ test "split input string on spaces" {
     }
 
     {
-        const it = try split(testing.allocator, "    ");
+        const it = try split(testing.allocator, "    ", ' ');
         defer testing.allocator.free(it);
 
         var expect = [_][]const u8{};
@@ -167,7 +167,7 @@ test "split input string on spaces" {
     }
 
     {
-        const it = try split(testing.allocator, "|");
+        const it = try split(testing.allocator, "|", ' ');
         defer testing.allocator.free(it);
 
         var expect = [_][]const u8{"|"};
@@ -176,7 +176,7 @@ test "split input string on spaces" {
     }
 
     {
-        const it = try split(testing.allocator, "hello");
+        const it = try split(testing.allocator, "hello", ' ');
         defer testing.allocator.free(it);
 
         var expect = [_][]const u8{"hello"};

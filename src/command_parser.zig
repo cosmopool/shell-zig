@@ -7,7 +7,7 @@ const Strings = @import("strings.zig");
 
 /// Parse user input string into an command and it's arguments
 pub fn parse(allocator: Allocator, inputString: []const u8) !CommandInput {
-    const input = try Strings.split(allocator, inputString);
+    const input = try Strings.split(allocator, inputString, ' ');
     errdefer allocator.free(input);
     if (input.len == 0) {
         return CommandInput{ .command = .unknown, .arguments = &.{} };
