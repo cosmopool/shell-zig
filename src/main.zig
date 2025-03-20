@@ -1,10 +1,11 @@
 const std = @import("std");
-const CommandParser = @import("parser.zig");
+const CommandParser = @import("command_parser.zig");
 const ExitCommand = @import("commands/exit.zig");
+const EchoCommand = @import("commands/echo.zig");
 
 pub fn main() !void {
-    const stderr = std.io.getStdErr().writer();
-    const stdout = std.io.getStdOut().writer();
+    const stderr: std.io.AnyWriter = std.io.getStdErr().writer().any();
+    const stdout: std.io.AnyWriter = std.io.getStdOut().writer().any();
     const stdin = std.io.getStdIn().reader();
     var buffer: [1024]u8 = undefined;
 
@@ -21,6 +22,7 @@ pub fn main() !void {
 
         switch (commandInput.command) {
             .exit => try ExitCommand.run(commandInput.arguments),
+            .echo => try EchoCommand.run(allocator, commandInput.arguments, stdout),
             .unknown => try stderr.print("{s}: command not found\n", .{user_input}),
         }
     }
