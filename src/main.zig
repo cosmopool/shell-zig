@@ -1,8 +1,8 @@
 const std = @import("std");
-const CommandParser = @import("command_parser.zig");
-const ExitCommand = @import("commands/exit.zig");
-const EchoCommand = @import("commands/echo.zig");
-const TypeCommand = @import("commands/type.zig");
+const command_parser = @import("command_parser.zig");
+const exit_command = @import("commands/exit.zig");
+const echo_command = @import("commands/echo.zig");
+const type_command = @import("commands/type.zig");
 
 pub fn main() !void {
     var stderr: std.io.AnyWriter = std.io.getStdErr().writer().any();
@@ -20,13 +20,13 @@ pub fn main() !void {
         try stdout.print("$ ", .{});
 
         const user_input = try stdin.readUntilDelimiter(&buffer, '\n');
-        const commandInput = try CommandParser.parse(allocator, user_input);
-        defer allocator.free(commandInput.arguments);
+        const command_input = try command_parser.Parse(allocator, user_input);
+        defer allocator.free(command_input.arguments);
 
-        switch (commandInput.command) {
-            .exit => try ExitCommand.run(commandInput.arguments),
-            .echo => try EchoCommand.run(allocator, commandInput.arguments, &stdout),
-            .type => try TypeCommand.run(commandInput.arguments, &stdout, &stderr),
+        switch (command_input.command) {
+            .exit => try exit_command.run(command_input.arguments),
+            .echo => try echo_command.run(allocator, command_input.arguments, &stdout),
+            .type => try type_command.run(command_input.arguments, &stdout, &stderr),
             .unknown => try stderr.print("{s}: command not found\n", .{user_input}),
         }
     }
