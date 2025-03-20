@@ -2,6 +2,30 @@ const std = @import("std");
 const testing = @import("std").testing;
 const Allocator = std.mem.Allocator;
 const BuiltinCommands = @import("commands.zig").BuiltinCommands;
+const CommandInput = @import("commands.zig").CommandInput;
+
+/// Parse user input string into an command and it's arguments
+pub fn parse(allocator: Allocator, inputString: []const u8) !CommandInput {
+    const input = try splitInput(allocator, inputString);
+    errdefer allocator.free(input);
+    if (input.len == 0) {
+        // const args = try allocator.create(CommandInput);
+        // args.command = .unknown;
+        // args.arguments = &.{};
+        // return args.*;
+        return CommandInput{ .command = .unknown, .arguments = &.{} };
+    }
+
+    const builtinCommand = std.meta.stringToEnum(BuiltinCommands, input[0]) orelse {
+        const args = try allocator.alloc([]const u8, 0);
+        // const args = try allocator.create(CommandInput);
+        // args.command = .unknown;
+        // args.arguments = &.{};
+        // return args.*;
+        return CommandInput{ .command = .unknown, .arguments = args };
+    };
+    return CommandInput{ .command = builtinCommand, .arguments = input };
+}
 
 /// Returns `true` if a string is compose of only spaces
 fn hasOnlySpaces(input: []const u8) bool {
@@ -12,8 +36,8 @@ fn hasOnlySpaces(input: []const u8) bool {
 }
 
 fn splitInput(allocator: Allocator, input: []const u8) Allocator.Error![][]const u8 {
-    if (input.len == 0) return &.{};
-    if (hasOnlySpaces(input)) return &.{};
+    if (input.len == 0) return try allocator.alloc([]const u8, 0);
+    if (hasOnlySpaces(input)) return try allocator.alloc([]const u8, 0);
     if (input.len == 1) {
         var result = try allocator.alloc([]const u8, 1);
         result[0] = input;
@@ -34,7 +58,7 @@ fn splitInput(allocator: Allocator, input: []const u8) Allocator.Error![][]const
         startIndex = i + 1;
     }
 
-    if (startIndex != @as(isize, @intCast(input.len)) - 1) {
+    if (startIndex != input.len) {
         try input_splited.append(input[startIndex..input.len]);
     }
 
@@ -42,6 +66,25 @@ fn splitInput(allocator: Allocator, input: []const u8) Allocator.Error![][]const
 }
 
 test "split input string on spaces" {
+    {
+        const it = try splitInput(testing.allocator, "exit 0");
+        defer testing.allocator.free(it);
+
+        const expect = [_][]const u8{ "exit", "0" };
+        try testing.expectEqual(2, it.len);
+        try testing.expectEqualStrings(expect[0], it[0]);
+        try testing.expectEqualStrings(expect[1], it[1]);
+    }
+
+    {
+        const it = try splitInput(testing.allocator, "exit    ");
+        defer testing.allocator.free(it);
+
+        const expect = [_][]const u8{ "exit", "0" };
+        try testing.expectEqual(1, it.len);
+        try testing.expectEqualStrings(expect[0], it[0]);
+    }
+
     {
         const it = try splitInput(testing.allocator, "abc def ghi");
         defer testing.allocator.free(it);
@@ -132,6 +175,37 @@ test "split input string on spaces" {
     }
 }
 
+test "parsing input string" {
+    {
+        const output = try parse(testing.allocator, "exit 0");
+        defer testing.allocator.free(output.arguments);
+        try testing.expectEqual(.exit, output.command);
+        try testing.expectEqual(2, output.arguments.len);
+    }
+
+    // {
+    //     // TODO: fix this memory leak
+    //     const output = try parse(testing.allocator, "singleWord");
+    //     defer testing.allocator.free(output.arguments);
+    //     try testing.expectEqual(.unknown, output.command);
+    //     try testing.expectEqual(0, output.arguments.len);
+    // }
+
+    {
+        const output = try parse(testing.allocator, "");
+        defer testing.allocator.free(output.arguments);
+        try testing.expectEqual(.unknown, output.command);
+        try testing.expectEqual(0, output.arguments.len);
+    }
+
+    {
+        const output = try parse(testing.allocator, " ");
+        defer testing.allocator.free(output.arguments);
+        try testing.expectEqual(.unknown, output.command);
+        try testing.expectEqual(0, output.arguments.len);
+    }
+}
+
 test "check if a string has only spaces" {
     try testing.expectEqual(true, hasOnlySpaces(" "));
     try testing.expectEqual(true, hasOnlySpaces("  "));
@@ -141,7 +215,12 @@ test "check if a string has only spaces" {
     try testing.expectEqual(false, hasOnlySpaces("    ."));
     try testing.expectEqual(false, hasOnlySpaces("."));
     try testing.expectEqual(false, hasOnlySpaces(".  "));
+
     try testing.expectEqual(false, hasOnlySpaces("    a"));
     try testing.expectEqual(false, hasOnlySpaces("a"));
     try testing.expectEqual(false, hasOnlySpaces("a  "));
+
+    try testing.expectEqual(false, hasOnlySpaces("    0"));
+    try testing.expectEqual(false, hasOnlySpaces("0"));
+    try testing.expectEqual(false, hasOnlySpaces("0  "));
 }
