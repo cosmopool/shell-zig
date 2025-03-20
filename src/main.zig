@@ -1,4 +1,6 @@
 const std = @import("std");
+const CommandParser = @import("parser.zig");
+const ExitCommand = @import("commands/exit.zig");
 
 pub fn main() !void {
     const stderr = std.io.getStdErr().writer();
@@ -6,18 +8,20 @@ pub fn main() !void {
     const stdin = std.io.getStdIn().reader();
     var buffer: [1024]u8 = undefined;
 
-    var shouldExit: bool = false;
-    while (!shouldExit) {
+    while (true) {
+        var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+        const allocator = arena.allocator();
+        defer arena.deinit();
+
         try stdout.print("$ ", .{});
 
         const user_input = try stdin.readUntilDelimiter(&buffer, '\n');
+        const commandInput = try CommandParser.parse(allocator, user_input);
+        defer allocator.free(commandInput.arguments);
 
-        if (std.mem.eql(u8, user_input, "exit")) {
-            shouldExit = true;
-        } else {
-            try stderr.print("{s}: command not found\n", .{user_input});
+        switch (commandInput.command) {
+            .exit => try ExitCommand.run(commandInput.arguments),
+            .unknown => try stderr.print("{s}: command not found\n", .{user_input}),
         }
     }
-
-    std.process.exit(0);
 }
