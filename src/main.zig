@@ -1,8 +1,8 @@
 const std = @import("std");
 const command_parser = @import("command_parser.zig");
-const exit_command = @import("commands/exit.zig");
-const echo_command = @import("commands/echo.zig");
-const type_command = @import("commands/type.zig");
+const exit_cmd = @import("commands/exit.zig");
+const echo_cmd = @import("commands/echo.zig");
+const type_cmd = @import("commands/type.zig");
 
 pub fn main() !void {
     var stderr: std.io.AnyWriter = std.io.getStdErr().writer().any();
