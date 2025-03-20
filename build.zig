@@ -36,7 +36,12 @@ pub fn build(b: *std.Build) void {
 
     // tests
     const parser_tests = b.addTest(.{
-        .root_source_file = b.path("src/parser.zig"),
+        .root_source_file = b.path("src/command_parser.zig"),
+        .optimize = optimize,
+        .target = target,
+    });
+    const strings_tests = b.addTest(.{
+        .root_source_file = b.path("src/strings.zig"),
         .optimize = optimize,
         .target = target,
     });
@@ -47,9 +52,11 @@ pub fn build(b: *std.Build) void {
     });
 
     const run_parser_tests = b.addRunArtifact(parser_tests);
+    const run_strings_tests = b.addRunArtifact(strings_tests);
     const run_exit_tests = b.addRunArtifact(exit_tests);
 
     const test_step = b.step("test", "Runs the test suite.");
     test_step.dependOn(&run_parser_tests.step);
+    test_step.dependOn(&run_strings_tests.step);
     test_step.dependOn(&run_exit_tests.step);
 }
