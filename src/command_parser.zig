@@ -9,19 +9,11 @@ pub fn parse(allocator: Allocator, inputString: []const u8) !CommandInput {
     const input = try splitInput(allocator, inputString);
     errdefer allocator.free(input);
     if (input.len == 0) {
-        // const args = try allocator.create(CommandInput);
-        // args.command = .unknown;
-        // args.arguments = &.{};
-        // return args.*;
         return CommandInput{ .command = .unknown, .arguments = &.{} };
     }
 
     const builtinCommand = std.meta.stringToEnum(BuiltinCommands, input[0]) orelse {
         const args = try allocator.alloc([]const u8, 0);
-        // const args = try allocator.create(CommandInput);
-        // args.command = .unknown;
-        // args.arguments = &.{};
-        // return args.*;
         return CommandInput{ .command = .unknown, .arguments = args };
     };
     return CommandInput{ .command = builtinCommand, .arguments = input };
