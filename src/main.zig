@@ -11,7 +11,9 @@ pub fn main() !void {
     var buffer: [1024]u8 = undefined;
 
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
     const allocator = arena.allocator();
+
     while (true) {
         defer _ = arena.reset(.{ .retain_with_limit = 1024 * 1024 });
 
