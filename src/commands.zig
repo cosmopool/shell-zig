@@ -9,4 +9,5 @@ pub const BuiltinCommands = enum {
     unknown,
     exit,
     echo,
+    type,
 };

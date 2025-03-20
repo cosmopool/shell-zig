@@ -2,6 +2,7 @@ const std = @import("std");
 const CommandParser = @import("command_parser.zig");
 const ExitCommand = @import("commands/exit.zig");
 const EchoCommand = @import("commands/echo.zig");
+const TypeCommand = @import("commands/type.zig");
 
 pub fn main() !void {
     var stderr: std.io.AnyWriter = std.io.getStdErr().writer().any();
@@ -23,6 +24,7 @@ pub fn main() !void {
         switch (commandInput.command) {
             .exit => try ExitCommand.run(commandInput.arguments),
             .echo => try EchoCommand.run(allocator, commandInput.arguments, &stdout),
+            .type => try TypeCommand.run(commandInput.arguments, &stdout, &stderr),
             .unknown => try stderr.print("{s}: command not found\n", .{user_input}),
         }
     }
