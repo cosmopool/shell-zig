@@ -40,9 +40,16 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .target = target,
     });
+    const exit_tests = b.addTest(.{
+        .root_source_file = b.path("src/commands/exit.zig"),
+        .optimize = optimize,
+        .target = target,
+    });
 
     const run_parser_tests = b.addRunArtifact(parser_tests);
+    const run_exit_tests = b.addRunArtifact(exit_tests);
 
     const test_step = b.step("test", "Runs the test suite.");
     test_step.dependOn(&run_parser_tests.step);
+    test_step.dependOn(&run_exit_tests.step);
 }
