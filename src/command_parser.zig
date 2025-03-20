@@ -20,7 +20,7 @@ pub fn Parse(allocator: Allocator, inputString: []const u8) !CommandInput {
     return CommandInput{ .command = builtin_command, .arguments = input };
 }
 
-test "parsing input string" {
+test Parse {
     {
         const output = try Parse(testing.allocator, "exit 0");
         defer testing.allocator.free(output.arguments);

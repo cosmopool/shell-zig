@@ -53,7 +53,7 @@ pub fn join(allocator: Allocator, splitted: [][]const u8) ![]const u8 {
     return try str.toOwnedSlice();
 }
 
-test "join input string" {
+test join {
     {
         var splitted = [_][]const u8{ "hello", "world" };
         const expect = "hello world";
@@ -75,7 +75,7 @@ test "join input string" {
     }
 }
 
-test "split input string on spaces" {
+test split {
     {
         const it = try split(testing.allocator, "exit 0", ' ');
         defer testing.allocator.free(it);
@@ -185,21 +185,33 @@ test "split input string on spaces" {
     }
 }
 
-test "check if a string has only spaces" {
-    try testing.expectEqual(true, hasOnlySpaces(" "));
-    try testing.expectEqual(true, hasOnlySpaces("  "));
-    try testing.expectEqual(true, hasOnlySpaces("   "));
-    try testing.expectEqual(true, hasOnlySpaces("    "));
+test hasOnlySpaces {
+    // empty string
+    {
+        try testing.expectEqual(true, hasOnlySpaces(" "));
+        try testing.expectEqual(true, hasOnlySpaces("  "));
+        try testing.expectEqual(true, hasOnlySpaces("   "));
+        try testing.expectEqual(true, hasOnlySpaces("    "));
+    }
 
-    try testing.expectEqual(false, hasOnlySpaces("    ."));
-    try testing.expectEqual(false, hasOnlySpaces("."));
-    try testing.expectEqual(false, hasOnlySpaces(".  "));
+    // with symbol
+    {
+        try testing.expectEqual(false, hasOnlySpaces("    ."));
+        try testing.expectEqual(false, hasOnlySpaces("."));
+        try testing.expectEqual(false, hasOnlySpaces(".  "));
+    }
 
-    try testing.expectEqual(false, hasOnlySpaces("    a"));
-    try testing.expectEqual(false, hasOnlySpaces("a"));
-    try testing.expectEqual(false, hasOnlySpaces("a  "));
+    // with letter
+    {
+        try testing.expectEqual(false, hasOnlySpaces("    a"));
+        try testing.expectEqual(false, hasOnlySpaces("a"));
+        try testing.expectEqual(false, hasOnlySpaces("a  "));
+    }
 
-    try testing.expectEqual(false, hasOnlySpaces("    0"));
-    try testing.expectEqual(false, hasOnlySpaces("0"));
-    try testing.expectEqual(false, hasOnlySpaces("0  "));
+    // with digit
+    {
+        try testing.expectEqual(false, hasOnlySpaces("    0"));
+        try testing.expectEqual(false, hasOnlySpaces("0"));
+        try testing.expectEqual(false, hasOnlySpaces("0  "));
+    }
 }
