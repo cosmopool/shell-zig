@@ -2,6 +2,11 @@ const std = @import("std");
 const testing = @import("std").testing;
 const Allocator = std.mem.Allocator;
 
+pub fn compareWithNullTerminated(null_terminated: [*:0]const u8, regular: []const u8) bool {
+    const as_slice = std.mem.span(null_terminated);
+    return std.mem.eql(u8, as_slice, regular);
+}
+
 /// Returns `true` if a string is compose of only spaces
 pub fn hasOnlySpaces(input: []const u8) bool {
     for (input) |char| {
@@ -51,6 +56,19 @@ pub fn join(allocator: Allocator, splitted: [][]const u8) ![]const u8 {
     }
 
     return try str.toOwnedSlice();
+}
+
+test compareWithNullTerminated {
+    {
+        const null_term: [5:0]u8 = "hello".*;
+        const val = compareWithNullTerminated(&null_term, "hello");
+        try testing.expectEqual(true, val);
+    }
+    {
+        const null_term: [5:0]u8 = "hello".*;
+        const val = compareWithNullTerminated(&null_term, "h");
+        try testing.expectEqual(false, val);
+    }
 }
 
 test join {
