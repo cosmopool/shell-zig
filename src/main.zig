@@ -5,6 +5,8 @@ const echo_cmd = @import("commands/echo.zig");
 const type_cmd = @import("commands/type.zig");
 const Environment = @import("environment.zig");
 
+const page_allocator = std.heap.page_allocator;
+
 pub fn main() !void {
     // ----------------------------------------------
     // INIT
@@ -14,18 +16,18 @@ pub fn main() !void {
     const stdin = std.io.getStdIn().reader();
     var buffer: [1024]u8 = undefined;
 
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    var arena = std.heap.ArenaAllocator.init(page_allocator);
     const allocator = arena.allocator();
-    var environ = try Environment.init(std.heap.page_allocator);
+    var environ = try Environment.init(page_allocator);
 
     // ----------------------------------------------
     // DEINIT
     // ----------------------------------------------
-    defer environ.deinit(allocator);
     defer arena.deinit();
 
     while (true) {
         defer _ = arena.reset(.{ .retain_with_limit = 1024 * 1024 });
+        defer environ.reset();
 
         try stdout.print("$ ", .{});
 

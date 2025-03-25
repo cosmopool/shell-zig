@@ -9,46 +9,25 @@ pub const Error = error{
 };
 
 /// `PATH` environmental variable already splited and in order
-paths: std.MultiArrayList(Directory),
+paths: std.mem.SplitIterator(u8, .scalar),
 
 /// All environmental variable store as a HashMap
-envs: std.StringHashMap([]const u8),
+envs: std.process.EnvMap,
 
-/// Returns a HashMap([]const u8, []const u8) with all environmental variables.
-/// Caller owns the memory.
+/// Returns an Environment with all environmental variables.
 pub fn init(allocator: std.mem.Allocator) !Environment {
-    var environ = std.StringHashMap([]const u8).init(allocator);
-    for (std.os.environ) |env| {
-        const pair = splitEnvIntoKeyValue(env);
-        try environ.put(pair.key, pair.value);
-    }
-    const path_from_env = environ.get("PATH");
-    if (path_from_env == null) return Error.PathNotSet;
-
-    const env_path = try strings.split(allocator, path_from_env.?, ':');
-
-    var paths = std.MultiArrayList(Directory){};
-    for (env_path, 0..) |path, i| {
-        const dir: std.fs.Dir = std.fs.openDirAbsolute(path, .{ .iterate = true }) catch |err| switch (err) {
-            std.fs.File.OpenError.FileNotFound => continue,
-            else => return err,
-        };
-        try paths.append(allocator, .{ .dir = dir, .path = env_path[i] });
-    }
+    const envs = try std.process.getEnvMap(allocator);
+    const path_from_env = envs.get("PATH") orelse return Error.PathNotSet;
+    const paths = std.mem.splitScalar(u8, path_from_env, ':');
 
     return .{
-        .envs = environ,
+        .envs = envs,
         .paths = paths,
     };
 }
 
-pub fn deinit(self: Environment, allocator: std.mem.Allocator) void {
-    for (0..self.paths.len) |i| {
-        const dir = self.paths.get(i);
-        dir.deinit();
-    }
-    var paths = self.paths;
-    paths.deinit(allocator);
+pub fn reset(self: *Environment) void {
+    self.paths.reset();
 }
 
 fn splitEnvIntoKeyValue(env: [*:0]u8) struct { key: []const u8, value: []const u8 } {

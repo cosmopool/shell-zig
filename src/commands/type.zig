@@ -15,16 +15,12 @@ pub fn run(allocator: std.mem.Allocator, input: [][]const u8, stdout: *AnyWriter
         return try stdout.print("{s} is a shell builtin\n", .{input[1]});
     }
 
-    for (0..environment.paths.len - 1) |i| {
-        const directory = environment.paths.get(i);
-        var it = directory.dir.iterate();
-        defer it.reset();
-
-        while (try it.next()) |entry| {
-            if (!std.mem.eql(u8, entry.name, input[1])) continue;
-            const full_path = try directory.fullPath(allocator, entry.name);
-            return try stdout.print("{s} is {s}\n", .{ input[1], full_path });
-        }
+    defer environment.paths.reset();
+    while (environment.paths.next()) |dir_path| {
+        const full_path = try std.fs.path.join(allocator, &[_][]const u8{ dir_path, input[1] });
+        // check if file exists at 'full_path'
+        std.fs.accessAbsolute(full_path, .{ .mode = .read_only }) catch continue;
+        return try stdout.print("{s} is {s}\n", .{ input[1], full_path });
     }
 
     try stderr.print("{s}: not found\n", .{input[1]});
