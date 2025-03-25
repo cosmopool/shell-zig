@@ -3,11 +3,11 @@ const testing = @import("std").testing;
 const Allocator = std.mem.Allocator;
 const BuiltinCommands = @import("commands.zig").BuiltinCommands;
 const CommandInput = @import("commands.zig").CommandInput;
-const Strings = @import("strings.zig");
+const strings = @import("strings.zig");
 
 /// Parse user input string into an command and it's arguments
-pub fn Parse(allocator: Allocator, inputString: []const u8) !CommandInput {
-    const input = try Strings.split(allocator, inputString, ' ');
+pub fn Parse(allocator: Allocator, input_string: []const u8) !CommandInput {
+    const input = try strings.split(allocator, input_string, ' ');
     errdefer allocator.free(input);
     if (input.len == 0) {
         return CommandInput{ .command = .unknown, .arguments = &.{} };

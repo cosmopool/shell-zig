@@ -1,7 +1,6 @@
 const std = @import("std");
 const testing = std.testing;
 const strings = @import("strings.zig");
-const Directory = @import("directory.zig");
 
 const Environment = @This();
 pub const Error = error{
