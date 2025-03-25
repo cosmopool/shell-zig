@@ -13,10 +13,7 @@ pub fn Parse(allocator: Allocator, input_string: []const u8) !CommandInput {
         return CommandInput{ .command = .unknown, .arguments = &.{} };
     }
 
-    const builtin_command = std.meta.stringToEnum(BuiltinCommands, input[0]) orelse {
-        const args = try allocator.alloc([]const u8, 0);
-        return CommandInput{ .command = .unknown, .arguments = args };
-    };
+    const builtin_command = std.meta.stringToEnum(BuiltinCommands, input[0]) orelse .unknown;
     return CommandInput{ .command = builtin_command, .arguments = input };
 }
 

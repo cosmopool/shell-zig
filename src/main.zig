@@ -3,6 +3,7 @@ const command_parser = @import("command_parser.zig");
 const exit_cmd = @import("commands/exit.zig");
 const echo_cmd = @import("commands/echo.zig");
 const type_cmd = @import("commands/type.zig");
+const run_executable_cmd = @import("commands/run_executable.zig");
 const Environment = @import("environment.zig");
 
 const page_allocator = std.heap.page_allocator;
@@ -35,11 +36,16 @@ pub fn main() !void {
         const command_input = try command_parser.Parse(allocator, user_input);
         defer allocator.free(command_input.arguments);
 
+        if (user_input.len == 0) {
+            try stderr.print("\n", .{});
+            continue;
+        }
+
         switch (command_input.command) {
             .exit => try exit_cmd.run(command_input.arguments),
             .echo => try echo_cmd.run(allocator, command_input.arguments, &stdout),
             .type => try type_cmd.run(allocator, command_input.arguments, &stdout, &stderr, &environ),
-            .unknown => try stderr.print("{s}: command not found\n", .{user_input}),
+            .unknown => try run_executable_cmd.run(allocator, command_input.arguments, &stderr, &environ),
         }
     }
 }
