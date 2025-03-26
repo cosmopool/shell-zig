@@ -2,7 +2,7 @@ const std = @import("std");
 const assert = std.debug.assert;
 const AnyWriter = std.io.AnyWriter;
 
-const BuiltinCommands = @import("../commands.zig").BuiltinCommands;
+const BuiltinCommands = @import("../command_input.zig").BuiltinCommands;
 const Environment = @import("../environment.zig");
 const strings = @import("../strings.zig");
 

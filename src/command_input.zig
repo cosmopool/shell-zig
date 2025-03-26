@@ -1,25 +1,34 @@
 const std = @import("std");
 const testing = @import("std").testing;
 const Allocator = std.mem.Allocator;
-const BuiltinCommands = @import("commands.zig").BuiltinCommands;
-const CommandInput = @import("commands.zig").CommandInput;
 const strings = @import("strings.zig");
 
+pub const BuiltinCommands = enum {
+    unknown,
+    exit,
+    echo,
+    type,
+};
+
+pub const CommandInput = @This();
+
+command: BuiltinCommands,
+arguments: [][]const u8,
+
 /// Parse user input string into an command and it's arguments
-pub fn Parse(allocator: Allocator, input_string: []const u8) !CommandInput {
+pub fn parse(allocator: Allocator, input_string: []const u8) !CommandInput {
     const input = try strings.split(allocator, input_string, ' ');
     errdefer allocator.free(input);
-    if (input.len == 0) {
-        return CommandInput{ .command = .unknown, .arguments = &.{} };
-    }
+
+    if (input.len == 0) return .{ .command = .unknown, .arguments = &.{} };
 
     const builtin_command = std.meta.stringToEnum(BuiltinCommands, input[0]) orelse .unknown;
-    return CommandInput{ .command = builtin_command, .arguments = input };
+    return .{ .command = builtin_command, .arguments = input };
 }
 
-test Parse {
+test parse {
     {
-        const output = try Parse(testing.allocator, "exit 0");
+        const output = try parse(testing.allocator, "exit 0");
         defer testing.allocator.free(output.arguments);
         try testing.expectEqual(.exit, output.command);
         try testing.expectEqual(2, output.arguments.len);
@@ -34,14 +43,14 @@ test Parse {
     // }
 
     {
-        const output = try Parse(testing.allocator, "");
+        const output = try parse(testing.allocator, "");
         defer testing.allocator.free(output.arguments);
         try testing.expectEqual(.unknown, output.command);
         try testing.expectEqual(0, output.arguments.len);
     }
 
     {
-        const output = try Parse(testing.allocator, " ");
+        const output = try parse(testing.allocator, " ");
         defer testing.allocator.free(output.arguments);
         try testing.expectEqual(.unknown, output.command);
         try testing.expectEqual(0, output.arguments.len);

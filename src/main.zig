@@ -1,5 +1,5 @@
 const std = @import("std");
-const command_parser = @import("command_parser.zig");
+const CommandInput = @import("command_input.zig");
 const exit_cmd = @import("commands/exit.zig");
 const echo_cmd = @import("commands/echo.zig");
 const type_cmd = @import("commands/type.zig");
@@ -33,7 +33,7 @@ pub fn main() !void {
         try stdout.print("$ ", .{});
 
         const user_input = try stdin.readUntilDelimiter(&buffer, '\n');
-        const command_input = try command_parser.Parse(allocator, user_input);
+        const command_input = try CommandInput.parse(allocator, user_input);
         defer allocator.free(command_input.arguments);
 
         if (user_input.len == 0) {
