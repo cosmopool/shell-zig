@@ -9,6 +9,7 @@ pub const BuiltinCommands = enum {
     echo,
     type,
     pwd,
+    cd,
 };
 
 pub const CommandInput = @This();

@@ -47,6 +47,7 @@ pub fn main() !void {
             .echo => try echo_cmd.run(allocator, command_input.arguments, &stdout),
             .type => try type_cmd.run(allocator, command_input.arguments, &stdout, &stderr, &environ),
             .pwd => try stdout.print("{s}\n", .{environ.pwd}),
+            .cd => try cd_cmd.run(allocator, command_input.arguments, &stdout, &stderr, &environ),
             .unknown => try run_executable_cmd.run(allocator, command_input.arguments, &stderr, &environ),
         }
     }
