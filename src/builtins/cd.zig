@@ -15,6 +15,8 @@ pub fn run(allocator: std.mem.Allocator, user_input: [][]const u8, stderr: *AnyW
     const is_absolute_path = user_input[1][0] == std.fs.path.sep;
     if (is_absolute_path) {
         new_path = user_input[1];
+    } else if (user_input[1][0] == '~') {
+        new_path = environment.envs.get("HOME") orelse return printBadDir(stderr, new_path);
     } else {
         const paths_to_join = [2][]const u8{ environment.pwd, user_input[1] };
         const paths_joined = try std.fs.path.join(allocator, &paths_to_join);
