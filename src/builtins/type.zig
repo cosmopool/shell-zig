@@ -1,8 +1,8 @@
 const std = @import("std");
 const testing = @import("std").testing;
-const strings = @import("../strings.zig");
-const BuiltinCommands = @import("../command_input.zig").BuiltinCommands;
-const Environment = @import("../environment.zig");
+const strings = @import("core").strings;
+const BuiltinCommands = @import("core").CommandInput.BuiltinCommands;
+const Environment = @import("core").Environment;
 const assert = std.debug.assert;
 const AnyWriter = std.io.AnyWriter;
 

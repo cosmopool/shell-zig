@@ -2,9 +2,9 @@ const std = @import("std");
 const assert = std.debug.assert;
 const AnyWriter = std.io.AnyWriter;
 
-const BuiltinCommands = @import("../command_input.zig").BuiltinCommands;
-const Environment = @import("../environment.zig");
-const strings = @import("../strings.zig");
+const BuiltinCommands = @import("command_input").BuiltinCommands;
+const Environment = @import("core").Environment;
+const strings = @import("core").strings;
 
 pub fn run(allocator: std.mem.Allocator, user_input: [][]const u8, stderr: *AnyWriter, environment: *Environment) !void {
     assert(user_input.len > 0);

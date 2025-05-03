@@ -1,6 +1,6 @@
 const std = @import("std");
 const testing = @import("std").testing;
-const Strings = @import("../strings.zig");
+const Strings = @import("core").strings;
 
 pub fn run(allocator: std.mem.Allocator, input: [][]const u8, stdout: *std.io.AnyWriter) !void {
     std.debug.assert(input.len > 0);
