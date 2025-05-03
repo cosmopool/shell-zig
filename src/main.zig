@@ -5,11 +5,11 @@ const page_allocator = std.heap.page_allocator;
 const CommandInput = @import("core").CommandInput;
 const Environment = @import("core").Environment;
 
-const exit_cmd = @import("commands/exit.zig");
-const echo_cmd = @import("commands/echo.zig");
-const type_cmd = @import("commands/type.zig");
-const cd_cmd = @import("commands/cd.zig");
-const run_executable_cmd = @import("commands/run_executable.zig");
+const exit_cmd = @import("builtins/exit.zig");
+const echo_cmd = @import("builtins/echo.zig");
+const type_cmd = @import("builtins/type.zig");
+const cd_cmd = @import("builtins/cd.zig");
+const run_executable_cmd = @import("builtins/run_executable.zig");
 
 pub fn main() !void {
     // ----------------------------------------------
