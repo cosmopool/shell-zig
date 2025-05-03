@@ -6,16 +6,26 @@ const CommandInput = @import("core").CommandInput;
 const Environment = @import("core").Environment;
 const strings = @import("core").strings;
 
-pub fn run(user_input: [][]const u8, stderr: *AnyWriter, environment: *Environment) !void {
+pub fn run(allocator: std.mem.Allocator, user_input: [][]const u8, stderr: *AnyWriter, environment: *Environment) !void {
     assert(user_input.len > 0);
     assert(user_input.len <= 2);
     assert(std.mem.eql(u8, user_input[0], "cd"));
 
-    std.fs.accessAbsolute(user_input[1], .{ .mode = .read_only }) catch {
-        return printBadDir(stderr, user_input[1]);
+    var new_path: []const u8 = undefined;
+    const is_absolute_path = user_input[1][0] == std.fs.path.sep;
+    if (is_absolute_path) {
+        new_path = user_input[1];
+    } else {
+        const paths_to_join = [2][]const u8{ environment.pwd, user_input[1] };
+        const paths_joined = try std.fs.path.join(allocator, &paths_to_join);
+        new_path = try std.fs.realpathAlloc(allocator, paths_joined);
+    }
+
+    std.fs.accessAbsolute(new_path, .{ .mode = .read_only }) catch {
+        return printBadDir(stderr, new_path);
     };
 
-    try environment.setPwd(user_input[1]);
+    try environment.setPwd(new_path);
 }
 
 fn printBadDir(stderr: *AnyWriter, dir: []const u8) !void {
