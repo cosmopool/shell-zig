@@ -1,13 +1,15 @@
 const std = @import("std");
+
+const page_allocator = std.heap.page_allocator;
+
 const CommandInput = @import("core").CommandInput;
+const Environment = @import("core").Environment;
+
 const exit_cmd = @import("commands/exit.zig");
 const echo_cmd = @import("commands/echo.zig");
 const type_cmd = @import("commands/type.zig");
 const cd_cmd = @import("commands/cd.zig");
 const run_executable_cmd = @import("commands/run_executable.zig");
-const Environment = @import("core").Environment;
-
-const page_allocator = std.heap.page_allocator;
 
 pub fn main() !void {
     // ----------------------------------------------
@@ -26,7 +28,6 @@ pub fn main() !void {
     // DEINIT
     // ----------------------------------------------
     defer arena.deinit();
-
     while (true) {
         defer _ = arena.reset(.{ .retain_with_limit = 1024 * 1024 });
         defer environ.reset();
@@ -43,12 +44,12 @@ pub fn main() !void {
         }
 
         switch (command_input.command) {
+            .unknown => try run_executable_cmd.run(allocator, command_input.arguments, &stderr, &environ),
             .exit => try exit_cmd.run(command_input.arguments),
             .echo => try echo_cmd.run(allocator, command_input.arguments, &stdout),
             .type => try type_cmd.run(allocator, command_input.arguments, &stdout, &stderr, &environ),
             .pwd => try stdout.print("{s}\n", .{environ.pwd}),
-            .cd => try cd_cmd.run(allocator, command_input.arguments, &stdout, &stderr, &environ),
-            .unknown => try run_executable_cmd.run(allocator, command_input.arguments, &stderr, &environ),
+            .cd => try cd_cmd.run(command_input.arguments, &stderr, &environ),
         }
     }
 }
